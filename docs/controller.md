@@ -1,7 +1,6 @@
 # Controller Design and Harvard Integration Test
 
 **Member 3 — Controller and Verification**
-Branch: `feature/controller-simulation`
 
 ---
 
@@ -74,7 +73,7 @@ VCD written to `build/harvard.vcd`.
 
 ### Timing discipline
 
-- **Drive** `reset` and `start` at **falling edges** (mid-period, away from posedge).
+- Assert `start` on a falling edge and deassert it with a nonblocking assignment after the controller samples it on the following rising edge. Release `reset` away from the sampling edge.
 - **Sample** combinational outputs (`instruction`, `read_data`, `data_valid`, enables) **1 ns after each posedge** after combinationals settle.
 - **Check registered** changes (PC advance, stored write data) on the same 1 ns post-posedge sample.
 - **Failure**: `$fatal(1, ...)` on any mismatch.
@@ -99,9 +98,7 @@ VCD written to `build/harvard.vcd`.
 
 ## 3. Test results
 
-### Step 1 — Independent controller compile (while waiting for data path)
-
-Command (from `docs/member-work.md`):
+### Independent controller compile
 
 ```sh
 iverilog -g2005 -Wall -tnull -s controller rtl/controller.v
@@ -109,7 +106,7 @@ iverilog -g2005 -Wall -tnull -s controller rtl/controller.v
 
 Result: **exit code 0, no warnings** — `CONTROLLER_COMPILE_OK`
 
-### Step 2 — Integrated Harvard test (Member 2 merged)
+### Integrated Harvard test
 
 ```sh
 make test-harvard
@@ -127,7 +124,6 @@ iverilog -g2005 -Wall -s tb_harvard -o build/tb_harvard \
 vvp build/tb_harvard
 VCD info: dumpfile build/harvard.vcd opened for output.
 PASS: tb_harvard - all Harvard integration checks passed.
-testbench/tb_harvard.v:296: $finish called at 106000 (1ps)
 ```
 
 **Result: PASS ✓**
@@ -192,16 +188,4 @@ Add these signals from the `tb_harvard` scope:
 
 The waveform screenshot was captured in Surfer and saved as `docs/harvard-waveform.png`.
 
-## Captured Waveform
-
 ![Harvard integration waveform](harvard-waveform.png)
-
-### Git commands to commit all deliverables
-
-```sh
-git add rtl/controller.v testbench/tb_harvard.v docs/controller.md docs/harvard-waveform.png
-git diff --cached --check
-git diff --cached --stat
-git commit -m "Add controller, Harvard integration test and waveform"
-git push -u origin feature/controller-simulation
-```

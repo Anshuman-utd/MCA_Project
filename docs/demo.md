@@ -7,10 +7,10 @@ Anshuman prepares the final report from the team’s verified evidence and gives
 - Abstract with the design objective and the prototype's verified scope.
 - Literature Review with numbered citations from sources the team has actually read.
 - Proposed Solution with the block diagram, ROM and RAM organization, controller state sequence, clock-edge timing, and shared-port arbitration. Add available measured results and the conditions under which they were obtained.
-- Individual Contributions with all five names and each person's actual work. Each teammate supplies the relevant files, pull request and a short technical explanation. Credit Anshuman for preparing the report. Credit Member 5 for the direct Harvard tests, report commit and completed video work.
+- Individual Contributions with all five names and each person's actual work. Each teammate supplies the relevant files, pull request and a short technical explanation. Credit Anshuman for the FPGA timing run and report preparation. Credit Member 4 for the shared-memory benchmark and generic synthesis. Credit Member 5 for the direct Harvard tests, report commit and completed video work.
 - References in IEEE order of first citation. Verify edition and publication details for any textbook used.
 
-Use Member 3's `docs/harvard-waveform.png` and Member 4's `docs/comparison-waveform.png` for the prototype evidence. Use the measured Harvard and baseline grant counts to compute operations per cycle. Include the synthesis tool and device, where applicable. Document pending items as planned evaluation.
+Use Member 3's `docs/harvard-waveform.png` and Member 4's `docs/comparison-waveform.png` for the prototype evidence. Use the measured Harvard and baseline grant counts to compute operations per cycle. Include the ECP5 device, post-route Fmax, resource counts, and I/O assumptions from the [synthesis and timing results](../synthesis/results.md).
 
 ## Video handoff
 
@@ -25,3 +25,11 @@ After upload, Member 5 adds the accessible video link under **Prototype video** 
 | 3:40–4:30 | Member 5 introduces themselves, shows the direct test proving instruction/data isolation, then points to the report in the repository. |
 
 Member 1 introduces themselves by name in the opening. Keep the final runtime at or below five minutes. Check playback and permissions before submitting.
+
+## Submission checklist
+
+- [ ] Add the IEEE-format PDF to `docs/IEEE_Project_Report.pdf`. Include the abstract, literature review, proposed solution, individual contributions, and references.
+- [ ] Add the video link to the README. Confirm that the video opens with the evaluator’s access and lasts at most five minutes.
+- [ ] From a fresh clone, run the five Make targets listed in the README. Confirm that the block diagram, two waveform images, benchmark results, and synthesis results are visible in the repository.
+- [ ] Confirm that the merged Git history shows all five members’ technical contributions.
+- [ ] Submit the GitHub repository URL by **November 16, 2026 at 11:59 PM IST**. [Course submission form](https://docs.google.com/forms/d/e/1FAIpQLSc6Cx8OrOQLGj_X2ZMkyG5jc8mokq36mGRq2x8jGRNV1sbegA/viewform)

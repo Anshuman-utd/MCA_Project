@@ -80,6 +80,45 @@ The table below presents the **hierarchy-inclusive cell totals** for both archit
 
 ---
 
-## FPGA Implementation and Timing Status
+## ECP5 post-route timing and utilization
 
-- **Status:** Generic standard cell gate-level counts are recorded above. Target-specific FPGA device utilization (LUTs, BRAMs, DSP slices) and maximum operating frequency ($F_{\max}$) remain **pending** target FPGA hardware selection and vendor place-and-route constraints.
+Both memory subsystems were synthesized and routed for the **Lattice ECP5 LFE5U-25F**, package **CABGA381**, speed grade **6**. The clock target was **50 MHz** (20 ns) with placement seed **1**. This run used YoWASP builds of Yosys **0.70** (`28ba3cb92`) and nextpnr-ecp5 **0.11.1** on the RTL from `dddcc0e`. The table uses the final post-route values. [YoWASP toolchain](https://yowasp.org/) · [nextpnr clock constraints](https://github.com/YosysHQ/nextpnr/blob/main/docs/constraints.md)
+
+| Post-route metric | Harvard (`harvard_top`) | Shared memory (`shared_memory`) |
+| --- | ---: | ---: |
+| 50 MHz clock constraint | Pass | Pass |
+| Internal `clk` Fmax | 541.13 MHz | 314.07 MHz |
+| Longest same-clock path | 1.85 ns | 3.18 ns |
+| Longest input-to-output path | 8.20 ns | 10.35 ns |
+| Combinational sites (`TRELLIS_COMB`) | 69 | 104 |
+| Flip-flops (`TRELLIS_FF`) | 4 | 4 |
+| Distributed RAM write sites (`TRELLIS_RAMW`) | 4 | 8 |
+| Block RAMs (`DP16KD`) | 0 | 0 |
+| I/O sites (`TRELLIS_IO`) | 64 | 64 |
+
+In this placement, the Harvard clock path runs through the PC increment logic. The shared-memory clock path runs from the PC to the distributed RAM write-address logic. Both designs use distributed FPGA RAM. The generic counts above use a different mapping that represents RAM with flip-flops and multiplexers.
+
+The I/O pins were assigned by nextpnr without board pin or external timing constraints. The Fmax values cover the internal clock paths for these routed implementations. Board-level operation and I/O timing require board-specific constraints and validation. The simulation comparison independently measures eight requests completing in four versus eight cycles. [nextpnr ECP5 I/O handling](https://github.com/YosysHQ/nextpnr/blob/main/ecp5/main.cc)
+
+Raw nextpnr reports are available for [Harvard](harvard_top-report.json) and [shared memory](shared_memory-report.json).
+
+### Reproduce the FPGA run
+
+From the repository root, create the tool environment and run both designs with the same settings. The JSON netlists, reports, and logs are generated under `build/timing/`.
+
+```sh
+uv --no-cache venv --no-project build/fpga-tools
+uv --no-cache pip install --python build/fpga-tools/bin/python \
+  yowasp-yosys==0.70.0.0.post1259 yowasp-nextpnr-ecp5==0.11.1.0.post826
+
+mkdir -p build/timing
+export YOWASP_CACHE_DIR="$PWD/build/fpga-cache"
+for top in harvard_top shared_memory; do
+  build/fpga-tools/bin/yowasp-yosys -Q -q -l "build/timing/$top-synth.log" \
+    -p "read_verilog rtl/*.v; synth_ecp5 -top $top -json build/timing/$top.json" &&
+  build/fpga-tools/bin/yowasp-nextpnr-ecp5 \
+    --25k --package CABGA381 --speed 6 --freq 50 --seed 1 \
+    --lpf-allow-unconstrained --json "build/timing/$top.json" \
+    --report "build/timing/$top-report.json" > "build/timing/$top-route.log" 2>&1 || break
+done
+```

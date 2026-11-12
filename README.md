@@ -1,46 +1,32 @@
 # Instruction and Data Memory Hierarchy
 
-MCA Phase I prototype for comparing a Harvard memory subsystem with a single-port shared-memory baseline. The instruction and data memories can each accept one operation per cycle in the Harvard design. The team will measure how many cycles both designs take on the same workload.
+MCA Phase I prototype comparing a Harvard memory subsystem with a single-port shared-memory baseline. The Harvard design has a 16-word instruction ROM and a separate 16-word data RAM. The baseline uses one 32-word memory with data-priority arbitration. Each word is 16 bits.
 
-## Start here
+## Run the prototype
 
-- [Phase I plan, ownership and submission checklist](docs/phase1-plan.md)
-- [Architecture block diagram](docs/architecture.md)
-- [Signal interfaces and test workload](docs/interfaces.md)
-- [Step-by-step member work and screenshot ownership](docs/member-work.md)
-- [Copy-paste coding agent prompts for all five members](docs/team-prompts.md)
-- [Branch, commit, push and review commands for each member](docs/git-workflow.md)
-- [Report and video handoff](docs/demo.md)
-
-## Run locally
-
-Install [Icarus Verilog](https://steveicarus.github.io/iverilog/) and GNU Make. On macOS use `brew install icarus-verilog`. On Debian or Ubuntu use `sudo apt install iverilog make`. On Windows, the same Linux commands work in Ubuntu under WSL.
+Install [Icarus Verilog](https://steveicarus.github.io/iverilog/) and GNU Make. On macOS, use `brew install icarus-verilog`. On Debian, Ubuntu or Ubuntu under WSL, use `sudo apt install iverilog make`.
 
 From the repository root:
 
 ```sh
-make test-instruction
+make test-instruction test-data test-harvard test-harvard-directed test-comparison
 ```
 
-The instruction-path smoke test checks reset, hold, ROM contents, increment and wraparound. Its VCD is `build/instruction_path.vcd`. Open the file in GTKWave or another VCD viewer.
+The tests check the instruction path, data path, controller-driven workload, Harvard edge cases, and shared-port comparison. Each test prints a PASS result and writes a VCD under `build/`. Open `build/harvard.vcd` or `build/comparison.vcd` in Surfer or GTKWave to inspect the main demo traces.
 
-Run the remaining targets as the matching member branches are merged:
+On the four-pair benchmark, both designs accept eight operations. Harvard completes them in **4 cycles (2.00 ops/cycle)** and shared memory in **8 cycles (1.00 op/cycle)**.
 
-```sh
-make test-data
-make test-harvard
-make test-harvard-directed
-make test-comparison
-```
+## Design and evidence
 
-The integrated top depends on Member 2's data path. Member 3 owns the controller-driven Harvard demo. Member 5 owns the direct top-level checks, which need Member 2’s data path. The shared-memory RTL and comparison testbench come from Member 4.
+- [Architecture diagram](docs/architecture.md) and [interface and timing contract](docs/interfaces.md)
+- [Controller states and verification](docs/controller.md) and [Harvard waveform](docs/harvard-waveform.png)
+- [Benchmark results](docs/comparison.md) and [shared-memory comparison waveform](docs/comparison-waveform.png)
+- [Generic synthesis and ECP5 post-route timing results](synthesis/results.md)
 
-## GitHub workflow
+## Phase I submission
 
-Member 1 publishes the starter on `main` and invites the other four members. Each teammate works in their own clone, pushes their assigned branch and opens a pull request into `main`. The [Git guide](docs/git-workflow.md) gives each person the exact commands.
+The [report and demo checklist](docs/demo.md) covers the final handoff and submission. Anshuman prepares the IEEE report. Member 5 commits the PDF and editable source, then adds the video link below.
 
-Member 3 commits `docs/harvard-waveform.png`. Member 4 commits `docs/comparison-waveform.png`. See the [waveform capture steps](docs/member-work.md#how-to-capture-and-commit-the-two-screenshots).
+### Prototype video
 
-## Prototype video
-
-Member 5 adds the viewable video link here after upload. Anshuman prepares the final report from the team’s verified results and hands the source and PDF to Member 5 to commit.
+Pending upload.

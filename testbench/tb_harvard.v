@@ -2,7 +2,7 @@
 // Controller-driven Harvard integration testbench.
 //
 // Timing discipline
-//   Drive stimulus at falling edges (mid-period, away from posedge).
+//   Assert start at a falling edge and deassert it after the controller samples it.
 //   Sample combinational outputs after a 1 ns settle, BEFORE the
 //   committing posedge.
 //   Check registered results (PC, stored data) AFTER the posedge + 1 ns.
@@ -91,11 +91,6 @@ module tb_harvard;
     end
 
     // ----------------------------------------------------------------
-    // Shadow register to track "PC before this edge"
-    // ----------------------------------------------------------------
-    reg [3:0] pc_before;
-
-    // ----------------------------------------------------------------
     // Main stimulus
     // ----------------------------------------------------------------
     initial begin
@@ -105,7 +100,7 @@ module tb_harvard;
         reset = 1'b1;
         start = 1'b0;
 
-        @(negedge clk); // t=5 (first negedge)
+        @(negedge clk); // t=10 (first falling edge)
         // During reset: combinational outputs must be suppressed
         #1;
         if (fetch_enable      !== 1'b0) $fatal(1, "FAIL reset: fetch_enable=%b", fetch_enable);
@@ -116,7 +111,7 @@ module tb_harvard;
         if (done              !== 1'b0) $fatal(1, "FAIL reset: done=%b", done);
 
         @(posedge clk); // edge 1 – PC latches 0 (already 0)
-        @(negedge clk); // t=15
+        @(negedge clk); // t=20
         #1;
         // Still in reset: same checks
         if (fetch_enable      !== 1'b0) $fatal(1, "FAIL reset(2): fetch_enable=%b", fetch_enable);
@@ -141,24 +136,10 @@ module tb_harvard;
         // Pulse start at a falling edge (mid-period)
         // On the next posedge the state machine will transition IDLE→S1
         // ============================================================
-        @(negedge clk); // t=25
-        start = 1'b1;   // pulse start high for one cycle, away from posedge
-        #1;
-
-        // Before the committing edge of S1 arrives, sample combinationals.
-        // The controller outputs for S1 are already up (state→S1 on the
-        // *next* posedge, so currently still IDLE; outputs come up after
-        // that posedge).  We sample per-step AFTER each posedge below.
-
-        // ============================================================
-        // Step 1 commit edge:  IDLE→S1
-        //   Before edge: PC=0, controller will drive S1 outputs after edge
-        // ============================================================
-        @(posedge clk); // edge 3 – state transitions IDLE→S1; PC still 0 until this edge
-        start = 1'b0;   // deassert start (nonblocking after posedge: safe)
-        // After this posedge state=S1, but PC has NOT advanced yet (fetch_enable
-        // was 0 in IDLE; instruction_valid was 0 on this edge).
-        // PC remains 0. S1 outputs are now combinationally active.
+        @(negedge clk); // t=30
+        start = 1'b1;
+        @(posedge clk); // t=35: IDLE→S1, PC remains 0
+        start <= 1'b0;  // Deassert after the controller samples start.
         #1;
         // ----- Sample S1 combinational outputs (settled 1 ns after posedge) -----
         if (pc !== 4'd0)
@@ -180,9 +161,9 @@ module tb_harvard;
 
         // ============================================================
         // Step 1 → Step 2 commit edge:  S1→S2
-        //   On this posedge: PC advances (0→1), write to word 3 commits
+        //   S1 completes, PC advances (0→1), and S2 presents the write request.
         // ============================================================
-        @(posedge clk); // edge 4 – S1→S2; PC 0→1; word-3 write commits (10)
+        @(posedge clk); // t=45: S1→S2; PC 0→1
         #1;
         // Post-edge: PC=1 (advanced by S1 fetch), state=S2 outputs active
         if (pc !== 4'd1)
@@ -206,9 +187,9 @@ module tb_harvard;
 
         // ============================================================
         // Step 2 → Step 3 commit edge:  S2→S3
-        //   On this posedge: PC advances (1→2)
+        //   The write to word 3 commits and PC advances (1→2).
         // ============================================================
-        @(posedge clk); // edge 5 – S2→S3; PC 1→2
+        @(posedge clk); // t=55: S2→S3; PC 1→2
         #1;
         if (pc !== 4'd2)
             $fatal(1, "FAIL S3: PC expected 2, got %0d", pc);
