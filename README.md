@@ -20,13 +20,24 @@ On the four-pair benchmark, both designs accept eight operations. Harvard comple
 
 - [Architecture diagram](docs/architecture.md) and [interface and timing contract](docs/interfaces.md)
 - [Controller states and verification](docs/controller.md) and [Harvard waveform](docs/harvard-waveform.png)
-- [Benchmark results](docs/comparison.md) and [shared-memory comparison waveform](docs/comparison-waveform.png)
+- [Benchmark results](docs/comparison.md) and [Surfer comparison waveform](docs/comparison-waveform-surfer.png)
 - [Generic synthesis and ECP5 post-route timing results](synthesis/results.md)
 
 ## Phase I submission
 
-The [report and demo checklist](docs/demo.md) covers the final handoff and submission. Anshuman prepares the IEEE report. Member 5 commits the PDF and editable source, then adds the video link below.
+- [IEEE Phase I project report](docs/IEEE_Project_Report.pdf) · [Editable LaTeX source](docs/report/IEEE_Project_Report.tex)
+- [Report and demo checklist](docs/demo.md)
 
 ### Prototype video
 
 Pending upload.
+
+## Team
+
+| Member | Contribution |
+| --- | --- |
+| Anshuman Mehta | Architecture, instruction path, integration, FPGA timing, and report preparation |
+| Rudraksh | Data path and its unit tests |
+| Vridhi Chaudhary | Controller, Harvard integration test, and waveform |
+| Bineet Keshari | Shared-memory baseline, comparison, waveform, and generic synthesis |
+| Shrijan Sanidhya | Directed Harvard verification and report and video handoff |

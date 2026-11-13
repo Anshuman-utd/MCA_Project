@@ -55,11 +55,13 @@ PASS: All comparison checks and corner-case tests passed successfully!
 
 ## 4. Waveform Inspection and Clock Edge Analysis
 
-The verified comparison waveform is committed at [docs/comparison-waveform.png](comparison-waveform.png).
+The Surfer capture of the Icarus Verilog comparison trace is saved at [docs/comparison-waveform-surfer.png](comparison-waveform-surfer.png).
 
-![Comparison Waveform](comparison-waveform.png)
+![Harvard and shared-memory comparison in Surfer](comparison-waveform-surfer.png)
 
-### Key Clock Edges Identified in the Waveform:
+The Surfer axis is in picoseconds (1,000 ps = 1 ns). The benchmark ends at 95 ns. The additional shared-memory fetches at 105 and 115 ns belong to the rejected-request checks.
+
+### Key clock edges
 
 1. **Edge 1 ($t = 25\,\text{ns}$ — Contested Request Rising Edge):**
    - **Harvard Subsystem:** Both `h_instruction_valid = 1` and `h_data_valid = 1` are settled high before the rising edge. Instruction `1002h` is fetched combinationally while RAM word 2 returns decimal `5`. At the $25\,\text{ns}$ rising edge, both transactions commit, and `h_pc` advances from `0` to `1`.
@@ -115,4 +117,4 @@ gtkwave build/comparison.vcd
 3. Zoom to the time interval $15\,\text{ns}$ to $105\,\text{ns}$.
 4. Ensure values are displayed in Hex for instructions/PC and Decimal for read data.
 5. Highlight the rising edges at $25\,\text{ns}$ (contention) and $35\,\text{ns}$ (held fetch completion).
-6. Capture the screen and save to `docs/comparison-waveform.png`.
+6. Capture the screen and save to `docs/comparison-waveform-surfer.png`.
