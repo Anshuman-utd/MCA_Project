@@ -26,11 +26,10 @@ On the four-pair benchmark, both designs accept eight operations. Harvard comple
 ## Phase I submission
 
 - [IEEE Phase I project report](docs/IEEE_Project_Report.pdf) · [Editable LaTeX source](docs/report/IEEE_Project_Report.tex)
-- [Report and demo checklist](docs/demo.md)
 
 ### Prototype video
 
-Pending upload.
+https://drive.google.com/drive/folders/1-z-x6rvHqhUj_YRnWfAGeqh4L6njm6aS?usp=sharing
 
 ## Team
 
