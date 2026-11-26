@@ -1,6 +1,6 @@
 # Instruction and Data Memory Hierarchy
 
-MCA Phase I prototype comparing a Harvard memory subsystem with a single-port shared-memory baseline. The Harvard design has a 16-word instruction ROM and a separate 16-word data RAM. The baseline uses one 32-word memory with data-priority arbitration. Each word is 16 bits.
+MCA Phase II project comparing a Harvard memory subsystem with a single-port shared-memory baseline. The Harvard design has a 16-word instruction ROM and a separate 16-word data RAM. The baseline uses one 32-word memory with data-priority arbitration. Each word is 16 bits.
 
 ## Run the prototype
 
@@ -23,9 +23,11 @@ On the four-pair benchmark, both designs accept eight operations. Harvard comple
 - [Benchmark results](docs/comparison.md) and [Surfer comparison waveform](docs/comparison-waveform-surfer.png)
 - [Generic synthesis and ECP5 post-route timing results](synthesis/results.md)
 
-## Phase I submission
+## Phase II final submission
 
-- [IEEE Phase I project report](docs/IEEE_Project_Report.pdf) · [Editable LaTeX source](docs/report/IEEE_Project_Report.tex)
+- [Final IEEE project report](docs/IEEE_Project_Report.pdf) · [Editable LaTeX source](docs/report/IEEE_Project_Report.tex)
+
+The final report covers the abstract, literature review, proposed solution, results and discussion, individual contributions, conclusion, and references. It includes the verified benchmark, waveform evidence, and recorded ECP5 timing results.
 
 ### Prototype video
 

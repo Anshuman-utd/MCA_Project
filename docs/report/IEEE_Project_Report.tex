@@ -8,13 +8,13 @@
 
 \title{Instruction and Data Memory Hierarchy\\Design and Evaluation of a Harvard-Style Prototype}
 \author{\IEEEauthorblockN{Anshuman Mehta, Rudraksh, Vridhi Chaudhary, Bineet Keshari, and Shrijan Sanidhya}
-\IEEEauthorblockA{Master of Computer Applications\\Phase I Project Report}}
+\IEEEauthorblockA{Master of Computer Applications\\Phase II Final Project Report}}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-A single shared memory port serializes instruction fetches and data accesses when both are requested in the same cycle. This project implements a Verilog-2005 Harvard-style subsystem with a 16-word instruction ROM and a 16-word data RAM, each with 16-bit words. A scripted controller exercises simultaneous fetch and data operations. A 32-word single-port baseline processes the same four fetch and data request pairs using data-priority arbitration. The Harvard design completes eight memory operations in four cycles, compared with eight cycles for the baseline, yielding 2.00 and 1.00 operations per cycle, respectively. Both designs meet a 50 MHz constraint in a routed Lattice ECP5 implementation. The reported internal clock limits are 541.13 MHz for Harvard and 314.07 MHz for the shared baseline.
+A single shared memory port serializes instruction fetches and data accesses when both are requested in the same cycle. This project implements a Verilog-2005 Harvard-style subsystem with a 16-word instruction ROM and a 16-word data RAM, each with 16-bit words. A scripted controller exercises simultaneous fetch and data operations. A 32-word single-port baseline processes the same four fetch and data request pairs using data-priority arbitration. The Harvard design completes eight memory operations in four cycles, compared with eight cycles for the baseline, yielding 2.00 and 1.00 operations per cycle, respectively. Both designs meet a 50 MHz constraint in a routed Lattice ECP5 implementation. The reported internal clock limits are 541.13 MHz for Harvard and 314.07 MHz for the shared baseline. Functional tests cover request qualification, memory isolation, arbitration, and reset behavior. The results demonstrate the removal of shared-port contention for the tested workload; they do not establish a universal processor speedup or measured board performance.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -24,7 +24,7 @@ Harvard architecture, instruction memory, memory arbitration, Verilog, FPGA timi
 \section{Introduction}
 Instruction fetch and operand access can contend for the same service slot in a shared-memory subsystem. This project isolates the effect of port organization with two small designs that expose the same request and response interface. Both have 32 logical word locations. The experiment varies how the locations are organized and how simultaneous requests are serviced.
 
-A finite-state controller supplies the request sequence. Distinct ROM words make each accepted fetch observable.
+A finite-state controller supplies the request sequence. Distinct ROM words make each accepted fetch observable. The objective is to implement and verify independent instruction and data paths, compare them with an explicitly arbitrated single-port baseline, and interpret both cycle-level throughput and implementation cost. The deliverable is a memory-subsystem prototype with a scripted controller; it does not implement a complete instruction-executing CPU, cache, or multilevel memory hierarchy.
 
 \section{Literature Review}
 Backus described the processor-to-store transfer path as a bottleneck in the classical von Neumann organization \cite{backus}. In the baseline used here, one address is selected per cycle. Simultaneous instruction and data requests therefore create a conflict even when the addresses refer to different regions of the array.
@@ -96,7 +96,12 @@ PC & ROM word (hex) & Data request & Read value\\
 \end{tabular}
 \end{table}
 
-\section{Verification and Results}
+\subsection{Evaluation method and reproducibility}
+The RTL and testbenches use Verilog-2005. Unit tests validate each memory path before controller integration, and directed tests exercise request rejection and reset behavior. The comparison testbench presents the same ordered requests to both designs and tracks each design's grants separately. A request remains asserted until accepted, preventing a stalled fetch from being counted as completed. Read values and instruction words are checked as well as cycle counts.
+
+The five simulation targets are \texttt{test-instruction}, \texttt{test-data}, \texttt{test-harvard}, \texttt{test-harvard-directed}, and \texttt{test-comparison} in the root Makefile. They generate VCD traces under \texttt{build/}. The committed screenshots provide presentation evidence, while the self-checking simulations provide executable checks. Generic synthesis commands, FPGA tool versions and constraints, and raw nextpnr JSON reports are retained under \texttt{synthesis/}.
+
+\section{Results and Discussion}
 \subsection{Functional simulation}
 All five self-checking tests passed in Icarus Verilog 13.0. The instruction and data unit tests cover PC reset, hold and wraparound, memory initialization, write timing, address range, and conflicting controls. The controller-driven test verifies four successive fetches, overlap with the data operations, readback, and the completion pulse. A direct Harvard test checks same-address isolation between ROM and RAM, a fetch during a rejected write, and RAM retention through reset. The comparison test drives each design independently and keeps each request active until its grant.
 
@@ -160,6 +165,17 @@ Block RAMs & 0 & 0\\
 
 The \(F_{\max}\) values apply to internal clock paths. The tool assigned I/O pins automatically and used no board-specific external timing constraints. The 10 ns simulation clock is a stimulus setting. The project repository includes the RTL, testbenches, waveforms, and raw timing reports.
 
+\subsection{Interpretation and limitations}
+For the eight-operation workload, throughput is the number of accepted operations divided by the occupied memory-access cycles. Thus, Harvard achieves $8/4=2.00$ operations per cycle and shared memory achieves $8/8=1.00$. At a common clock frequency, the Harvard subsystem uses half as many service cycles for these paired requests. A valid signal qualifies the combinational response; the rising edge is the acceptance point for counting the operation, advancing the PC, and committing a write.
+
+The improvement follows from serving independent requests concurrently. If only one request is active per cycle, both architectures can service that request without contention, so the benchmark's factor of two need not apply. Data-priority arbitration is deterministic but does not guarantee fairness: sustained legal data traffic can starve instruction fetches. A round-robin arbiter would be a possible extension where bounded waiting matters.
+
+Resource comparisons also depend on implementation choices. The Harvard instruction region is a constant ROM, whereas the baseline declares one writable array spanning both regions. Generic synthesis can optimize the constant ROM differently from the unified array. Consequently, the 573 versus 1,217 cell counts describe these RTL implementations, rather than a general area advantage of every Harvard design. FPGA distributed-memory mapping produces a different resource representation, so generic cell totals and FPGA sites should not be compared as the same unit.
+
+The routed internal clock limit is about 1.72 times higher for Harvard in this one device configuration. This is separate from the twofold operations-per-cycle result. The design has combinational read paths and unconstrained external interfaces, so multiplying the reported internal clock limit by operations per cycle would not establish a validated board-level bandwidth. No physical FPGA board measurement is reported. The timing evidence is tool-generated placement and routing for the stated device, seed, and constraints.
+
+The small fixed workload establishes correctness for the checked transactions and illustrates port contention. It does not measure power, application execution time, cache hit rates, off-chip memory latency, or behavior across multiple placement seeds. Larger memories, synchronous block RAM, varied request mixes, and board-specific I/O constraints would require additional evaluation.
+
 \section{Individual Contributions}
 \textbf{Anshuman Mehta} defined the interfaces and implemented the PC, ROM, and Harvard top. He verified integration, ran ECP5 timing, and prepared the report.
 
@@ -173,6 +189,12 @@ The \(F_{\max}\) values apply to internal clock paths. The tool assigned I/O pin
 
 \textbf{Shrijan Sanidhya} implemented the direct Harvard testbench. His tests cover same-address ROM and RAM isolation, fetch progress during a rejected write, and RAM retention when reset suppresses active requests.
 
+\section{Conclusion}
+The project implements separate instruction and data paths with independent request qualification and a shared clock. Simulation checks confirm PC sequencing, memory read/write behavior, simultaneous access, controller completion, and rejection of invalid requests. A single-port baseline demonstrates the arbitration cost under the same four request pairs: Harvard completes eight operations in four cycles, while shared memory takes eight cycles. These results support the project's central claim that independent paths eliminate shared-port contention for concurrent instruction and data traffic.
+
+Both implementations satisfy the 50 MHz internal clock constraint in the recorded ECP5 place-and-route runs. The generic synthesis and routed results complement the functional comparison, with the mapping and external timing limitations stated explicitly. The final repository contains modular RTL, five self-checking testbenches, waveform evidence, synthesis and timing records, and this report. Future work can evaluate larger synchronous memories, fair arbitration, realistic request mixes, and a constrained physical FPGA demonstration.
+
+\IEEEtriggeratref{4}
 \begin{thebibliography}{00}
 \bibitem{backus}
 J. Backus, \textquotedblleft Can programming be liberated from the von Neumann style? A functional style and its algebra of programs,\textquotedblright\ \emph{Commun. ACM}, vol.~21, no.~8, pp.~613--641, Aug. 1978, doi: \href{https://doi.org/10.1145/359576.359579}{10.1145/359576.359579}.
